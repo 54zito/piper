@@ -1,0 +1,19 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.33.2-alpine
+    container_name: vaultwarden
+    restart: unless-stopped
+    networks:
+      - traefik_proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /piper/vaultwarden/data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.rule=Host(`vaultwarden.e-firmino.com`)"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+
+networks:
+  traefik_proxy:
+    external: true

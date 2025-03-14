@@ -1,0 +1,15 @@
+services:
+  adguardhome:
+    image: adguard/adguardhome:v0.107.57
+    container_name: adguardhome
+    restart: unless-stopped
+    networks:
+      home_network:
+        ipv4_address: 192.168.1.254
+    volumes:
+      - /piper/adguardhome/conf:/opt/adguardhome/conf
+      - /piper/adguardhome/work:/opt/adguardhome/work
+
+networks:
+  home_network:
+    external: true

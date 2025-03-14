@@ -1,0 +1,58 @@
+services:
+  traefik:
+    image: traefik:v3.3.4
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - traefik_proxy
+    ports:
+      - 80:80
+      - 443:443
+      - 5480:5480
+      - 54443:54443
+    volumes:
+      - /piper/traefik/ssl_certificates:/ssl_certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /piper/traefik/secrets:/traefik_secrets:ro
+    environment:
+      - CLOUDFLARE_DNS_API_TOKEN_FILE=/traefik_secrets/cloudflare_dns_api_token.key
+      - CLOUDFLARE_ZONE_API_TOKEN_FILE=/traefik_secrets/cloudflare_zone_api_token.key
+    command:
+      - "--api"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Certificate resolver config
+      - "--certificatesresolvers.e-firmino.acme.dnschallenge=true"
+      - "--certificatesresolvers.e-firmino.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.e-firmino.acme.email=edfirmi54@icloud.com"
+      - "--certificatesresolvers.e-firmino.acme.storage=/ssl_certificates/acme.json"
+      - "--certificatesresolvers.e-firmino.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+      # Home entrypoints config
+      - "--entrypoints.home_web.address=:80"
+      - "--entrypoints.home_websecure.address=:443"
+      - "--entrypoints.home_web.http.redirections.entrypoint.to=home_websecure"
+      - "--entrypoints.home_web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.home_websecure.http.tls=true"
+      - "--entrypoints.home_websecure.http.tls.certresolver=e-firmino"
+      - "--entrypoints.home_websecure.http.tls.domains[0].main=home.e-firmino.com"
+      - "--entrypoints.home_websecure.http.tls.domains[0].sans=*.home.e-firmino.com"
+      # External entrypoints config
+      - "--entrypoints.web.address=:5480"
+      - "--entrypoints.websecure.address=:54443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certresolver=e-firmino"
+      - "--entrypoints.websecure.http.tls.domains[0].main=e-firmino.com"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.e-firmino.com"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=home_websecure"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.home.e-firmino.com`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+networks:
+  traefik_proxy:
+    external: true
