@@ -10,6 +10,7 @@ services:
       - 443:443
       - 5480:5480
       - 54443:54443
+      - 51820:51820/udp
     volumes:
       - /piper/traefik/ssl_certificates:/ssl_certificates
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -29,7 +30,7 @@ services:
       - "--certificatesresolvers.e-firmino.acme.email=edfirmi54@icloud.com"
       - "--certificatesresolvers.e-firmino.acme.storage=/ssl_certificates/acme.json"
       - "--certificatesresolvers.e-firmino.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-      # Home entrypoints config
+      # Home entrypoint config
       - "--entrypoints.home_web.address=:80"
       - "--entrypoints.home_websecure.address=:443"
       - "--entrypoints.home_web.http.redirections.entrypoint.to=home_websecure"
@@ -38,7 +39,7 @@ services:
       - "--entrypoints.home_websecure.http.tls.certresolver=e-firmino"
       - "--entrypoints.home_websecure.http.tls.domains[0].main=home.e-firmino.com"
       - "--entrypoints.home_websecure.http.tls.domains[0].sans=*.home.e-firmino.com"
-      # External entrypoints config
+      # External entrypoint config
       - "--entrypoints.web.address=:5480"
       - "--entrypoints.websecure.address=:54443"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
@@ -47,6 +48,8 @@ services:
       - "--entrypoints.websecure.http.tls.certresolver=e-firmino"
       - "--entrypoints.websecure.http.tls.domains[0].main=e-firmino.com"
       - "--entrypoints.websecure.http.tls.domains[0].sans=*.e-firmino.com"
+      # Wireguard entrypoint config
+      - "--entrypoints.wireguard.address=:51820/udp"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=home_websecure"

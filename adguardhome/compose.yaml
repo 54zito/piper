@@ -9,6 +9,7 @@ services:
     volumes:
       - /piper/adguardhome/conf:/opt/adguardhome/conf
       - /piper/adguardhome/work:/opt/adguardhome/work
+      - /etc/localtime:/etc/localtime:ro
 
 networks:
   home_network:
