@@ -1,0 +1,18 @@
+services:
+  homer:
+    image: b4bz/homer:v25.03.2
+    container_name: homer
+    restart: unless-stopped
+    networks:
+      - traefik_proxy
+    volumes:
+      - /piper/homer/assets:/www/assets
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homer.entrypoints=home_websecure"
+      - "traefik.http.routers.homer.rule=Host(`home.e-firmino.com`)"
+      - "traefik.http.services.homer.loadbalancer.server.port=8080"
+
+networks:
+  traefik_proxy:
+    external: true
